@@ -1,12 +1,12 @@
-import sys
 from typing import Literal
-from langchain_openai import ChatOpenAI
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, MessagesState, END
 from langgraph.prebuilt import ToolNode
 
 import utils
+import config
+
 from tools.list_available_agents import list_available_agents
 from tools.assign_agent_to_task import assign_agent_to_task
 
@@ -26,10 +26,6 @@ The agents that make up the kernel
 - **agent_smith**: The architect responsible for creating and maintaining other agents. AgentSmith ensures agents are equipped with the necessary tools and tests their functionality.
 - **tool_maker**: The developer of tools within the system, ToolMaker creates and refines the tools that agents need to perform their tasks, ensuring that the system remains flexible and well-equipped.
 - **web_researcher**: The knowledge gatherer, WebResearcher performs in-depth online research to provide the system with up-to-date information, allowing agents to make informed decisions and execute tasks effectively.
-
-Your responses must be either an inner monologue or a message to the user.
-If you are intending to call tools, then your response must be a succinct summary of your inner thoughts.
-Else, your response is a message the user.
 
 You interact with a user in this specific order:
 1. Reach a shared understanding on a goal.
@@ -75,7 +71,7 @@ def reasoning(state: MessagesState):
     print()
     print("hermes is thinking...")
     messages = state['messages']
-    tooled_up_model = ChatOpenAI(model="gpt-4o", temperature=0).bind_tools(tools)
+    tooled_up_model = config.default_langchain_model.bind_tools(tools)
     response = tooled_up_model.invoke(messages)
     return {"messages": [response]}
 

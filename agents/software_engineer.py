@@ -6,19 +6,31 @@ from langgraph.prebuilt import ToolNode
 
 import config
 
-system_prompt = """You are web_researcher, a ReAct agent that can use the web to research answers.
+system_prompt = """You are software_engineer, a ReAct agent that can create, modify, and delete code.
 
-You have a tool to search the web, and a tool to fetch the content of a web page.
-```
+You have tools to manage files, run shell commands, and collaborate with other agents by assigning them tasks.
 """
-    
-from tools.duck_duck_go_web_search import duck_duck_go_web_search
-from tools.fetch_web_page_content import fetch_web_page_content
 
-tools = [duck_duck_go_web_search, fetch_web_page_content]
+from tools.write_to_file import write_to_file
+from tools.overwrite_file import overwrite_file
+from tools.delete_file import delete_file
+from tools.read_file import read_file
+from tools.run_shell_command import run_shell_command
+from tools.assign_agent_to_task import assign_agent_to_task
+from tools.list_available_agents import list_available_agents
+
+tools = [
+    write_to_file,
+    overwrite_file,
+    delete_file,
+    read_file,
+    run_shell_command,
+    assign_agent_to_task,
+    list_available_agents
+]
 
 def reasoning(state: MessagesState):
-    print("web_researcher is thinking...")
+    print("software_engineer is thinking...")
     messages = state['messages']
     tooled_up_model = config.default_langchain_model.bind_tools(tools)
     response = tooled_up_model.invoke(messages)
@@ -30,10 +42,10 @@ def check_for_tool_calls(state: MessagesState) -> Literal["tools", END]:
     
     if last_message.tool_calls:
         if not last_message.content.strip() == "":
-            print("web_researcher thought this:")
+            print("software_engineer thought this:")
             print(last_message.content)
         print()
-        print("web_researcher is acting by invoking these tools:")
+        print("software_engineer is acting by invoking these tools:")
         print([tool_call["name"] for tool_call in last_message.tool_calls])
         return "tools"
     
@@ -54,8 +66,8 @@ workflow.add_edge("tools", 'reasoning')
 graph = workflow.compile()
 
 
-def web_researcher(task: str) -> str:
-    """Researches the web."""
+def software_engineer(task: str) -> str:
+    """Creates, modifies, and deletes code, manages files, runs shell commands, and collaborates with other agents."""
     return graph.invoke(
         {"messages": [SystemMessage(system_prompt), HumanMessage(task)]}
     )
